@@ -1,0 +1,2 @@
+[console_scripts]
+websnapshot = websnapshot.cli:main

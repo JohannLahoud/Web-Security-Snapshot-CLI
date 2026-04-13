@@ -1,8 +1,8 @@
 # web-security-snapshot
 
-`web-security-snapshot` is a lightweight Python CLI that generates a simple public web security posture report for a domain.
+`web-security-snapshot` is a small Python CLI for taking a fast, read-only snapshot of a domain's public web security posture.
 
-It performs non-intrusive defensive hygiene checks only:
+It focuses on practical defensive hygiene checks:
 
 - HTTPS homepage fetch
 - Common security header inspection
@@ -17,13 +17,6 @@ The CLI writes:
 - terminal summary
 - `<domain>-report.md`
 - `<domain>-report.json`
-
-## Features
-
-- Lightweight dependency set
-- Simple clean architecture
-- No brute force, port scanning, or offensive checks
-- Easy to package later with PyInstaller
 
 ## Installation
 
@@ -55,30 +48,27 @@ Web Security Snapshot
 Target: github.com
 Generated: 2026-04-13T10:15:10+00:00
 
-Risk score: 42/100
-Rating: Elevated
+Risk score: 5/100
+Rating: Low
 
 Checks
 - HTTPS homepage: OK (200)
 - TLS certificate: OK (expires 2026-07-01T23:59:59+00:00, 79 days left)
-- security.txt: Missing
+- security.txt: Present
 - robots.txt: Present
 - SPF: Present
-- DMARC: Missing
+- DMARC: Present
 
 Security headers
-- Strict-Transport-Security: Missing
-- Content-Security-Policy: Missing
+- Strict-Transport-Security: Present
+- Content-Security-Policy: Present
 - X-Frame-Options: Present
 - X-Content-Type-Options: Present
-- Referrer-Policy: Missing
+- Referrer-Policy: Present
 - Permissions-Policy: Missing
 
 Findings
-1. High: Strict-Transport-Security header is missing. The HTTPS response did not include Strict-Transport-Security.
-2. Medium: Content-Security-Policy header is missing. The HTTPS response did not include Content-Security-Policy.
-3. Medium: DMARC record was not found. No DMARC TXT record was detected for the domain.
-4. Low: security.txt file was not found. No public security.txt file was detected under /.well-known/security.txt.
+1. Low: Permissions-Policy header is missing. The HTTPS response did not include Permissions-Policy.
 
 Reports written:
 - github.com-report.md
@@ -87,38 +77,15 @@ Reports written:
 
 ## Output Files
 
-`<domain>-report.json` contains structured results for automation and archival.
-
-`<domain>-report.md` contains a human-readable professional summary.
-
-## Project Structure
-
-```text
-websnapshot/
-  __init__.py
-  __main__.py
-  cli.py
-  models.py
-  scoring.py
-  service.py
-  checks/
-    __init__.py
-    dns_checks.py
-    http_checks.py
-    tls_checks.py
-  renderers/
-    __init__.py
-    json_report.py
-    markdown_report.py
-    terminal_report.py
-```
+- `<domain>-report.json` contains structured results for automation and archival.
+- `<domain>-report.md` contains a human-readable summary.
 
 ## PyInstaller
 
-This project is structured to work cleanly with one-file packaging:
+Use the bundled spec file:
 
 ```bash
-pyinstaller --clean --onefile --name websnapshot websnapshot.spec
+pyinstaller --clean websnapshot.spec
 ```
 
 Built executable output will be placed under `dist/`.
@@ -126,7 +93,6 @@ Built executable output will be placed under `dist/`.
 ## Notes
 
 - The risk score is `0-100`, where higher values indicate higher observed public-facing risk.
-- The tool only checks public-facing defensive hygiene indicators.
-- It does not attempt exploitation, enumeration beyond the requested records, or any network scanning behavior.
+- The tool only checks public-facing defensive hygiene indicators and does not perform exploitation or network scanning.
 - Some domains may fail local TLS verification depending on the machine trust store, proxying, or interception in the current environment; certificate verification remains enabled intentionally.
 - Some sites may intentionally omit certain headers depending on architecture or CDN behavior; results should be interpreted as a practical posture snapshot, not a formal audit.

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from websnapshot.models import SnapshotReport
 
+HEADER_VALUE_LIMIT = 120
+
 
 def render_markdown(report: SnapshotReport) -> str:
     lines: list[str] = [
@@ -34,7 +36,7 @@ def render_markdown(report: SnapshotReport) -> str:
     for header in report.headers:
         lines.append(
             f"- {header.name}: {'Present' if header.present else 'Missing'}"
-            + (f" (`{header.value}`)" if header.value else "")
+            + (f" (`{_truncate_header_value(header.value)}`)" if header.value else "")
         )
 
     lines.extend(["", "## Findings", ""])
@@ -60,3 +62,9 @@ def render_markdown(report: SnapshotReport) -> str:
             lines.append(f"- {error}")
 
     return "\n".join(lines) + "\n"
+
+
+def _truncate_header_value(value: str) -> str:
+    if len(value) <= HEADER_VALUE_LIMIT:
+        return value
+    return value[: HEADER_VALUE_LIMIT - 3] + "..."

@@ -9,6 +9,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "requests>=2.32.0,<3.0.0",
+        "certifi>=2024.0.0",
         "dnspython>=2.6.0,<3.0.0",
     ],
     entry_points={

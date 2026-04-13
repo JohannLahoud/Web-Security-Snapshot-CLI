@@ -2,8 +2,14 @@ from __future__ import annotations
 
 from websnapshot.models import SnapshotReport
 
+HEADER_VALUE_LIMIT = 120
 
-def render_terminal(report: SnapshotReport) -> str:
+
+def render_terminal(
+    report: SnapshotReport,
+    markdown_report_name: str = "report.md",
+    json_report_name: str = "report.json",
+) -> str:
     lines = [
         "Web Security Snapshot",
         f"Target: {report.domain}",
@@ -24,13 +30,18 @@ def render_terminal(report: SnapshotReport) -> str:
     ]
 
     for header in report.headers:
-        lines.append(f"- {header.name}: {'Present' if header.present else 'Missing'}")
+        line = f"- {header.name}: {'Present' if header.present else 'Missing'}"
+        if header.value:
+            line += f" ({_truncate_header_value(header.value)})"
+        lines.append(line)
 
     lines.extend(["", "Findings"])
 
     if report.findings:
         for index, finding in enumerate(report.findings, start=1):
-            lines.append(f"{index}. {finding.severity}: {finding.title}.")
+            lines.append(
+                f"{index}. {finding.severity}: {finding.title}. {finding.detail}"
+            )
     else:
         lines.append("1. No significant findings.")
 
@@ -39,7 +50,7 @@ def render_terminal(report: SnapshotReport) -> str:
         for error in report.errors:
             lines.append(f"- {error}")
 
-    lines.extend(["", "Reports written:", "- report.md", "- report.json"])
+    lines.extend(["", "Reports written:", f"- {markdown_report_name}", f"- {json_report_name}"])
     return "\n".join(lines)
 
 
@@ -53,3 +64,9 @@ def _render_tls(report: SnapshotReport) -> str:
     if report.tls_expires_at and report.tls_days_remaining is not None:
         return f"OK (expires {report.tls_expires_at}, {report.tls_days_remaining} days left)"
     return "Unable to determine"
+
+
+def _truncate_header_value(value: str) -> str:
+    if len(value) <= HEADER_VALUE_LIMIT:
+        return value
+    return value[: HEADER_VALUE_LIMIT - 3] + "..."

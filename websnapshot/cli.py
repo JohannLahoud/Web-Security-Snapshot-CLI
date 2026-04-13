@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 from websnapshot.renderers.json_report import render_json
@@ -23,13 +24,24 @@ def main() -> int:
     args = parser.parse_args()
 
     report = generate_snapshot(args.domain)
+    report_stem = _report_stem(report.domain)
+    markdown_path = Path(f"{report_stem}-report.md")
+    json_path = Path(f"{report_stem}-report.json")
 
-    terminal_output = render_terminal(report)
+    terminal_output = render_terminal(
+        report,
+        markdown_report_name=markdown_path.name,
+        json_report_name=json_path.name,
+    )
     markdown_output = render_markdown(report)
     json_output = render_json(report)
 
-    Path("report.md").write_text(markdown_output, encoding="utf-8")
-    Path("report.json").write_text(json_output + "\n", encoding="utf-8")
+    markdown_path.write_text(markdown_output, encoding="utf-8")
+    json_path.write_text(json_output + "\n", encoding="utf-8")
 
     print(terminal_output)
     return 0
+
+
+def _report_stem(domain: str) -> str:
+    return re.sub(r"[^a-z0-9.-]+", "-", domain.lower()).strip("-.") or "report"

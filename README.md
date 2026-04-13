@@ -15,8 +15,8 @@ It performs non-intrusive defensive hygiene checks only:
 The CLI writes:
 
 - terminal summary
-- `report.md`
-- `report.json`
+- `<domain>-report.md`
+- `<domain>-report.json`
 
 ## Features
 
@@ -31,26 +31,28 @@ The CLI writes:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-pip install -e .
+pip install -e . --no-build-isolation
 ```
+
+If your environment has restricted network access, `--no-build-isolation` avoids pip creating a temporary build environment that may try to download packaging dependencies again.
 
 ## Usage
 
 ```bash
-python -m websnapshot example.com
+python -m websnapshot github.com
 ```
 
 Or after installing as a script entry point:
 
 ```bash
-websnapshot example.com
+websnapshot github.com
 ```
 
 ## Sample Output
 
 ```text
 Web Security Snapshot
-Target: example.com
+Target: github.com
 Generated: 2026-04-13T10:15:10+00:00
 
 Risk score: 42/100
@@ -73,21 +75,21 @@ Security headers
 - Permissions-Policy: Missing
 
 Findings
-1. High: Strict-Transport-Security header is missing.
-2. Medium: Content-Security-Policy header is missing.
-3. Medium: DMARC record was not found.
-4. Low: security.txt file was not found.
+1. High: Strict-Transport-Security header is missing. The HTTPS response did not include Strict-Transport-Security.
+2. Medium: Content-Security-Policy header is missing. The HTTPS response did not include Content-Security-Policy.
+3. Medium: DMARC record was not found. No DMARC TXT record was detected for the domain.
+4. Low: security.txt file was not found. No public security.txt file was detected under /.well-known/security.txt.
 
 Reports written:
-- report.md
-- report.json
+- github.com-report.md
+- github.com-report.json
 ```
 
 ## Output Files
 
-`report.json` contains structured results for automation and archival.
+`<domain>-report.json` contains structured results for automation and archival.
 
-`report.md` contains a human-readable professional summary.
+`<domain>-report.md` contains a human-readable professional summary.
 
 ## Project Structure
 
@@ -126,4 +128,5 @@ Built executable output will be placed under `dist/`.
 - The risk score is `0-100`, where higher values indicate higher observed public-facing risk.
 - The tool only checks public-facing defensive hygiene indicators.
 - It does not attempt exploitation, enumeration beyond the requested records, or any network scanning behavior.
+- Some domains may fail local TLS verification depending on the machine trust store, proxying, or interception in the current environment; certificate verification remains enabled intentionally.
 - Some sites may intentionally omit certain headers depending on architecture or CDN behavior; results should be interpreted as a practical posture snapshot, not a formal audit.
